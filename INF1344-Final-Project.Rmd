@@ -122,5 +122,214 @@ head(dat_final)
 - ftr : fail to remain collision
 - pd : property damage collision
 
+# DESCRIPTIVE STATISTICS
 
+# --- Inspect structure ---
+``` {r}
+str(dat_final)
+summary(dat_final)
+```
+# --- Binary columns --- For easier visualizations later
+``` {r}
+binary_cols <- c("fatalities", "injury_collisions", "ftr_collisions", "pd_collisions",
+                 "automobile", "motorcycle", "passenger", "bicycle", "pedestrian")
+vehicle_cols <- c("automobile", "motorcycle", "bicycle", "pedestrian")
+```
+# --- Descriptive stats for binary columns ---
+# Mean = proportion of 1s or YESes, SD = measure of spread (how variable yes/no are)
+``` {r}
+binary_summary <- dat_final %>%
+  summarise(across(all_of(binary_cols),
+                   list(mean = ~mean(., na.rm = TRUE),
+                        sd = ~sd(., na.rm = TRUE),
+                        count_1 = ~sum(. == 1, na.rm = TRUE),
+                        count_0 = ~sum(. == 0, na.rm = TRUE))))
+binary_summary
+glimpse(binary_summary)
+```
+(a) Fatalities: 612 cases total — extremely low frequency but high impact.
+(b) Injury Collisions: ~13.5% of all collisions — common enough to analyze temporal or spatial trends.
+(c) Fail-to-Remain: 17% — suggests an important behavioral or enforcement dimension; 17% left the site
+(d) Property-Damage Only: ~72% — dominates the dataset.
+(e) Automobiles: ~99.5% of collisions — overwhelmingly most involved vehicle type.
+(f) Motorcycles: ~0.6% — small count but potentially severe outcomes per collision.
+
+
+# --- Bar plots for counts of each Vehicle ---
+``` {r}
+binary_counts <- dat_final %>%
+  summarise(across(all_of(vehicle_cols), ~sum(. == 1, na.rm = TRUE))) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "count")
+
+ggplot(binary_counts, aes(x = reorder(variable, -count), y = count, fill = variable)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of Collisions by Type", x = "Collision Type", y = "Count of 'Yes'") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels = scales::comma)
+```
+Automobile has a significantly higher collision count than any other variables. A few potential reasons for this:
+(1) More automobiles than other vehicles in the roads with highest accidents
+(2) Automobiles usually have a bigger surface area that might contribute to collisions
+
+# --- Mean fatalities/injuries per month ---
+``` {r}
+# --- Counts instead of proportions, and months in order ---
+monthly_summary <- dat_final %>%
+  mutate(month = factor(month, 
+                        levels = c("January", "February", "March", "April", "May", "June",
+                                   "July", "August", "September", "October", "November", "December"))) %>%
+  group_by(month) %>%
+  summarise(total_fatalities = sum(fatalities, na.rm = TRUE),
+            total_injuries = sum(injury_collisions, na.rm = TRUE))
+
+ggplot(monthly_summary, aes(x = month, y = total_injuries, fill = month)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Injury Collisions by Month", x = "Month", y = "Total Collisions") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+
+```
+June has the highest total collisions, with Feb, Mar and Apr as the lowest. This might be because:
+(1) More people outside travelling during the summer break and (2) Winter months Feb-Apr is harsh and snowy causing less people to travel frequently throughout the week.
+
+
+# --- Injury collisions by day of week ---
+``` {r}
+day_summary <- dat_final %>%
+    mutate(day = factor(day, 
+                        levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+                                   "Saturday"))) %>%
+  group_by(day) %>%
+  summarise(prop_injuries = sum(injury_collisions, na.rm = TRUE))
+
+ggplot(day_summary, aes(x = day, y = prop_injuries, fill = day)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Injury Collisions by Day of Week", 
+       x = "Day", y = "Total Injury Collisions") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+```
+Fridays have the most injury collisions. Most people travel within or to different cities later in the night after office which might lead to more injury collisions.
+
+# --- Boxplot: Daily injury collisions by month ---
+```{r}
+daily_summary <- dat_final %>%
+   mutate(month = factor(month, 
+                        levels = c("January", "February", "March", "April", "May", "June",
+                                   "July", "August", "September", "October", "November", "December"))) %>%
+  group_by(month, date) %>%      # assuming 'date' exists
+  summarise(total_injury = sum(injury_collisions, na.rm = TRUE)) %>%
+  ungroup()
+
+ggplot(daily_summary, aes(x = month, y = total_injury, fill = month)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 16, width = 0.6) +
+  labs(title = "Daily Injury Collisions by Month",
+       x = "Month", y = "Daily Injury Collisions") +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+```
+Winter seasons of January, February and March have the most outliers. Possibly due to winter, darkeness, black ice.
+
+
+
+# --- Relationship between Automobile collisions and hour ---
+``` {r}
+# --- Bar plot for injury collisions by hour ---
+hourly_summary <- dat_final %>%
+  mutate(hour = as.numeric(hour)) %>%
+  group_by(hour) %>%
+  summarise(total_automobile = sum(automobile, na.rm = TRUE))
+
+ggplot(hourly_summary, aes(x = hour, y = total_automobile)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Automobile Collisions by Hour of Day", 
+       x = "Hour of Day", 
+       y = "Number of Automobile Collisions") +
+  theme_minimal()
+```
+Most of the automobile collisions happened between 3pm - 5pm or 15th-17hrs. We expected higher collisions later in night when people could drive more carelessly. But higher numbers of automobiles after work hours increase the chances of collisions, even if everyone is abiding by the rules.
+
+# --- Relationship between Motorcycle collisions and hour ---
+``` {r}
+# --- Bar plot for injury collisions by hour ---
+hourly_summary <- dat_final %>%
+  mutate(hour = as.numeric(hour)) %>%
+  group_by(hour) %>%
+  summarise(total_motorcycle = sum(motorcycle, na.rm = TRUE))
+
+ggplot(hourly_summary, aes(x = hour, y = total_motorcycle)) +
+  geom_bar(stat = "identity", fill = "green") +
+  labs(title = "Automobile Collisions by Hour of Day", 
+       x = "Hour of Day", 
+       y = "Number of Automobile Collisions") +
+  theme_minimal()
+```
+A similar graph can be seen with motorcycle collisions.
+
+# --- Histogram of Collisions x Hours ---
+``` {r}
+ggplot(dat_final, aes(x = hour)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
+  labs(title = "Distribution of Collisions by Hour", x = "Hour of Day", y = "Count") +
+  theme_minimal()
+```
+Because automobile dominates the dataset, the overall distribution of collisions by hour of day is pretty much the same.
+
+```{r}
+# --- Top 6 neighbourhoods by total collisions ---
+top_neighbourhoods <- dat_final %>%
+  filter(neighbourhood != "NSA") %>%  #remove 'NSA' or missing ones
+  group_by(neighbourhood) %>%
+  summarise(total_collisions = n()) %>%
+  arrange(desc(total_collisions)) %>%
+  slice_head(n = 20)
+
+ggplot(top_neighbourhoods, aes(x = reorder(neighbourhood, total_collisions), y = total_collisions)) +
+  geom_bar(stat = "identity", fill = "tomato") +
+  coord_flip() + 
+  labs(title = "Top 20 Neighbourhoods by Total Collisions",
+       x = "Neighbourhood", 
+       y = "Total Collisions") +
+  theme_minimal()
+```
+A horizontal bar graph (accommodating readability due to the length of neighbourhood names) reveals Wexford/Maryvale having significantly higher total collisions. With West Humber and York University Heights coming second and third. Everything else were clustered relatively closely and decreased.
+# --- Scatterplot: total injury vs property-damage collisions per month ---
+```{r}
+scatter_data <- dat_final %>%
+  group_by(month) %>%
+  summarise(injury = sum(injury_collisions, na.rm = TRUE),
+            property_damage = sum(pd_collisions, na.rm = TRUE))
+
+ggplot(scatter_data, aes(x = injury, y = property_damage, label = month)) +
+  geom_point(color = "darkred", size = 3) +
+  geom_text(vjust = -0.5, size = 3) +
+  labs(title = "Relationship Between Injury and Property-Damage Collisions by Month",
+       x = "Injury Collisions", y = "Property-Damage Collisions") +
+  theme_minimal()
+```
+The points are too scattered and can be deduced that there is no relation.
+
+``` {r}
+# --- Scatterplot: Fatalities vs Injury Collisions ---
+scatter_fatal <- dat_final %>%
+  group_by(month) %>%
+  summarise(
+    total_fatalities = sum(fatalities, na.rm = TRUE),
+    total_injury = sum(injury_collisions, na.rm = TRUE)
+  )
+
+ggplot(scatter_fatal, aes(x = total_injury, y = total_fatalities, label = month)) +
+  geom_point(color = "darkred", size = 3) +
+  geom_text(vjust = -0.5, size = 3) +
+  labs(
+    title = "Relationship between Fatalities and Injury Collisions (by Month)",
+    x = "Total Injury Collisions",
+    y = "Total Fatalities"
+  ) +
+  theme_minimal()
+
+```
+There is a slight positive relation between injury collisions and fatalities. Indicating that collisions that caused injury often led to fatalities.
 
