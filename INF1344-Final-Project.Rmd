@@ -22,7 +22,7 @@ library(stringr)
 
 # Read in the file
 ```{r}
-dat <- read.csv('traffic-collisions-4326')
+dat <- read.csv('traffic-collisions-4326.csv')
 
 # display top 6 rows
 head(dat)
