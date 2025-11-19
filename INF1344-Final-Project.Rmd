@@ -3,6 +3,8 @@ title: "Final Project"
 authors: "Group 4"
 date: "2025-11-05"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -196,8 +198,8 @@ ggplot(monthly_summary, aes(x = month, y = total_injuries, fill = month)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
 
 ```
-June has the highest total collisions, with Feb, Mar and Apr as the lowest. This might be because:
-(1) More people outside travelling during the summer break and (2) Winter months Feb-Apr is harsh and snowy causing less people to travel frequently throughout the week.
+September has the highest total collisions, with Feb, Mar and Apr as the lowest. This might be because:
+(1) Increased traffic as people return to work and school from summer break/vacations and (2) Winter months Feb-Apr is harsh and snowy causing less people to travel frequently throughout the week.
 
 
 # --- Injury collisions by day of week ---
@@ -482,11 +484,39 @@ ggplot(final_plot, aes(x = date, y = collisions, color = type)) +
 ```
 
 # ---Spatial Analysis---
-``` {r}
+``` {r message=FALSE}
 #Polygon map for spatial analysis
 neigh <- st_read("neighbourhoods-4326.geojson")
 
 neigh_utm <- st_transform(neigh, 32617)
+
+#count collisions per neighbourhood
+neigh_counts <- dat_final %>%
+  filter(neighbourhood != "NSA") %>%
+  group_by(neighbourhood) %>%
+  summarise(collision_count = n())
+
+#join counts to the polygon file
+neigh_joined <- neigh %>%
+  left_join(neigh_counts, by = c("AREA_NAME" = "neighbourhood"))
+
+#collision coint
+neigh_joined$collision_count[is.na(neigh_joined$collision_count)] <- 0 
+
+#create centroid
+neigh_centroids <- st_centroid(neigh_joined)
+
+#plot
+ggplot() +
+  geom_sf(data = neigh_joined, fill = "white", color = "pink") +
+  geom_sf(data = neigh_centroids, 
+          aes(color = collision_count), 
+          size = 0.5) +
+  scale_color_viridis_c() +
+  labs(title = "Traffic Collisions by Neighbourhood", 
+       color = "Collision Count") +
+  theme_minimal()
+
 
 #Removing invalid locations
 dat_spatial <- dat_final %>%
@@ -532,4 +562,3 @@ ggplot() +
 
 
 ```
-
