@@ -591,8 +591,6 @@ ggplot(final_plot, aes(x = date, y = collisions, color = type)) +
 #Polygon map for spatial analysis
 neigh <- st_read("neighbourhoods-4326.geojson")
 
-neigh_utm <- st_transform(neigh, 32617)
-
 #count collisions per neighbourhood
 neigh_counts <- dat_final %>%
   filter(neighbourhood != "NSA") %>%
@@ -606,13 +604,36 @@ neigh_joined <- neigh %>%
 #collision coint
 neigh_joined$collision_count[is.na(neigh_joined$collision_count)] <- 0 
 
-#test
+#plot
 ggplot() +
   geom_sf(data = neigh_joined, aes(fill = collision_count), color = "white", size = 0.2) +
-  scale_fill_viridis_c(option="rocket", direction=-1) +
+  scale_fill_viridis_c(option="rocket", direction=-1) + #reverse colour scale
   labs(title = "Traffic Collisions by Neighbourhood", 
        fill = "Collision Count") +
   theme_minimal()
 
+#animated!
+library(gapminder)
+library(gganimate)
+library(magick)
+
+collision_count2 <- dat_final %>%
+  count(neighbourhood, year, name = "collision_count2")
+
+neigh_year <- neigh_joined %>%
+  left_join(collision_count2, by = c("AREA_NAME" = "neighbourhood"))
+
+map1 <- ggplot(neigh_year) +
+  geom_sf(aes(fill = collision_count2, group = AREA_NAME), color = "white", size = 0.2) +
+  scale_fill_viridis_c(option="rocket", direction=-1) +
+  theme_minimal()
+
+animap <- map1 +
+  transition_states(year, transition_length=1,state_length=5) +
+                   ease_aes("linear") +
+                     ggtitle("Traffic Collisions Over the Years", 
+                             subtitle = "Year {closest_state}")
+
+animate(animap, fps=10, renderer = gifski_renderer("map.gif"))
 
 ```
