@@ -606,62 +606,13 @@ neigh_joined <- neigh %>%
 #collision coint
 neigh_joined$collision_count[is.na(neigh_joined$collision_count)] <- 0 
 
-#create centroid
-neigh_centroids <- st_centroid(neigh_joined)
-
-#plot
+#test
 ggplot() +
-  geom_sf(data = neigh_joined, fill = "white", color = "pink") +
-  geom_sf(data = neigh_centroids, 
-          aes(color = collision_count), 
-          size = 0.5) +
-  scale_color_viridis_c() +
+  geom_sf(data = neigh_joined, aes(fill = collision_count), color = "white", size = 0.2) +
+  scale_fill_viridis_c(option="rocket", direction=-1) +
   labs(title = "Traffic Collisions by Neighbourhood", 
-       color = "Collision Count") +
+       fill = "Collision Count") +
   theme_minimal()
-
-
-#Removing invalid locations
-dat_spatial <- dat_final %>%
-  filter(neighbourhood != "NSA") %>%
-  filter(lat_wgs84 !=0, long_wgs84 !=0) 
-
-#Creating spatial object, assigning CRS
-collisions_sf <- st_as_sf(dat_spatial, coords = c("long_wgs84","lat_wgs84"), crs = 4326)
-
-#Reprojecting
-collisions_utm <- st_transform(collisions_sf, 32617)
-
-#plot the city outline
-#plot(st_geometry(neigh_utm), border="black")
-
-# toronto_boundary <- neigh_utm |>
-#   st_union() |>
-#   st_make_valid() |>
-#   st_transform(32617)
-# 
-# coords <- st_coordinates(collisions_utm)
-# win <- as.owin(toronto_boundary)
-# collisions_ppp <- ppp(x=coords [,1], y=coords[,2], window=win)
-# kde <- density.ppp(collisions_ppp, sigma=300, edge=TRUE)
-# kde_df <- as.data.frame(kde)
-
-# ggplot() +
-#   geom_raster(data = kde_df, aes(x, y, fill = value)) +
-#   geom_sf(data = toronto_boundary, color = "white", fill = NA, linewidth = 0.3) +
-#   scale_fill_viridis_c(option = "heat") +
-#   coord_sf() +
-#   labs(title = "Toronto Traffic Collision Hotspots",
-#        subtitle = "Kernel Density Estimation",
-#        fill = "Density")
-
-ggplot() +
-  geom_sf(data = neigh, fill = "#f7f7f7", color = "white", linewidth=0.3) +
-  geom_sf(data = collisions_sf, color = "red", size = 0.5, alpha =0.6) +
-  geom_sf_text(data=st_point_on_surface(neigh),
-               aes(label = AREA_NAME), size=2.5, color="black",
-               check_overlap = TRUE) +
-  labs(title = "Collisions in Toronto")
 
 
 ```
