@@ -444,6 +444,7 @@ Conclusion:
 The hypothesis is not supported. Collision frequency does not differ significantly across months or between winter and non-winter periods.
 
 
+```{r regression_prep, message=FALSE, warning=FALSE}
 # ---Prep-Regression---
 library(lubridate)
 
@@ -460,7 +461,7 @@ dat_raw$occ_month_name <- month(dat_raw$occ_date2, label = TRUE, abbr = FALSE)
 table(dat_raw$occ_month)
 head(dat_raw[, c("occ_date", "occ_date2", "occ_month")])
 
-# Convert necessary predictors to numeric (if not already)
+# Convert necessary predictors to numeric
 dat_raw$occ_hour <- as.numeric(dat_raw$occ_hour)
 
 library(dplyr)
@@ -480,8 +481,11 @@ dat_raw$neighbourhood_top20 <- ifelse(
 dat_raw$neighbourhood_top20 <- factor(dat_raw$neighbourhood_top20)
 
 head(dat_raw)
+```
 
 
+
+```{r regression_model, message=FALSE, warning=FALSE}
 # ---Regression---
 
 library(dplyr)
@@ -494,17 +498,20 @@ monthly_data <- dat_raw %>%
 
 head(monthly_data)
 
-# Run regression predicting number of collisions
+# Regression predicting number of collisions
 model_trend <- lm(
   collisions ~ occ_month + occ_year,
   data = monthly_data
 )
 
 summary(model_trend)
+```
 
+```{r time_series_plot, message=FALSE, warning=FALSE}
 # ---Time Series Plot---
-ggplot(monthly_data, aes(x = as.Date(paste(occ_year, occ_month, "01", sep = "-")), 
-                         y = collisions)) +
+ggplot(monthly_data,
+       aes(x = as.Date(paste(occ_year, occ_month, "01", sep = "-")),
+           y = collisions)) +
   geom_line(color = "steelblue", size = 1) +
   labs(
     title = "Monthly Collision Trend in Toronto",
@@ -512,9 +519,10 @@ ggplot(monthly_data, aes(x = as.Date(paste(occ_year, occ_month, "01", sep = "-")
     y = "Number of Collisions"
   ) +
   theme_minimal()
+```
 
+```{r seasonality_plot, message=FALSE, warning=FALSE}
 # ---Seasonality Plot---
-```{r seasonality_plot}
 library(dplyr)
 
 seasonality_data <- monthly_data %>%
@@ -529,7 +537,10 @@ ggplot(seasonality_data, aes(x = factor(occ_month), y = avg_collisions)) +
     y = "Average Number of Collisions"
   ) +
   theme_minimal()
+```
 
+
+```{r forecast_plot, message=FALSE, warning=FALSE}
 # ---Forecasted Collision Trends---
 library(dplyr)
 library(ggplot2)
@@ -539,28 +550,28 @@ library(lubridate)
 monthly_data <- monthly_data %>%
   mutate(date = as.Date(paste(occ_year, occ_month, "01", sep = "-")))
 
-# Identify the last month in the historical dataset
+# Identify last month in historical dataset
 last_date  <- max(monthly_data$date)
 last_year  <- as.numeric(format(last_date, "%Y"))
 last_month <- as.numeric(format(last_date, "%m"))
 
-# Generate the next 24 months of future dates
+# Create next 24 months of dates
 future_dates <- data.frame(
   date = seq(
-    from = last_date %m+% months(1),   # the month following the last historical record
+    from = last_date %m+% months(1),
     by = "1 month",
     length.out = 24
   )
 )
 
-# Extract year and month for prediction (required by model_trend)
+# Extract year and month for prediction
 future_dates$occ_year  <- as.numeric(format(future_dates$date, "%Y"))
 future_dates$occ_month <- as.numeric(format(future_dates$date, "%m"))
 
-# Predict collisions for the future 24 months
+# Predict collisions
 future_dates$predicted_collisions <- predict(model_trend, newdata = future_dates)
 
-# Prepare historical and forecast data for plotting
+# Prepare data for plotting
 plot_data <- monthly_data %>%
   mutate(type = "Historical") %>%
   select(date, collisions, type)
@@ -572,7 +583,7 @@ future_plot <- future_dates %>%
 
 final_plot <- rbind(plot_data, future_plot)
 
-# Plot historical + forecasted collision trends
+# Plot
 ggplot(final_plot, aes(x = date, y = collisions, color = type)) +
   geom_line(size = 1.1) +
   scale_color_manual(values = c("Historical" = "steelblue", "Forecast" = "red")) +
@@ -583,8 +594,8 @@ ggplot(final_plot, aes(x = date, y = collisions, color = type)) +
     color = "Type"
   ) +
   theme_minimal()
-
 ```
+
 
 # ---Spatial Analysis---
 ``` {r message=FALSE}
