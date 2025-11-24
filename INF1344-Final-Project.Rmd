@@ -482,7 +482,6 @@ dat_raw$neighbourhood_top20 <- factor(dat_raw$neighbourhood_top20)
 head(dat_raw)
 ```
 
----
 
 # ---Regression---
 ```{r regression_model, message=FALSE, warning=FALSE}
@@ -505,8 +504,6 @@ model_trend <- lm(
 summary(model_trend)
 ```
 
----
-
 # ---Time Series Plot---
 ```{r time_series_plot, message=FALSE, warning=FALSE}
 library(ggplot2)
@@ -523,7 +520,6 @@ ggplot(monthly_data,
   theme_minimal()
 ```
 
----
 
 # ---Seasonality Plot---
 ```{r seasonality_plot, message=FALSE, warning=FALSE}
@@ -543,7 +539,6 @@ ggplot(seasonality_data, aes(x = factor(occ_month), y = avg_collisions)) +
   theme_minimal()
 ```
 
----
 
 # ---Forecasted Collision Trends---
 ```{r forecast_plot, message=FALSE, warning=FALSE}
