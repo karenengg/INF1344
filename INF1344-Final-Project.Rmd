@@ -454,8 +454,6 @@ dat_raw$occ_date2 <- as.POSIXct(dat_raw$occ_date / 1000, origin = "1970-01-01")
 
 # Extract month number (1–12)
 dat_raw$occ_month <- month(dat_raw$occ_date2)
-
-# (Optional) Month name
 dat_raw$occ_month_name <- month(dat_raw$occ_date2, label = TRUE, abbr = FALSE)
 
 # Check if month looks correct
