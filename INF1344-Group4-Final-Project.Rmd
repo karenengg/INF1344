@@ -1,11 +1,11 @@
 ---
 title: "Toronto Collision Data Exploration and Statistical Analysis"
 author:
-- "Yuhan Ahn"
-- "Rita Chen"
+- "Yuehan Ahn"
+- "Rita Chien"
 - "Charlene Chiu"
 - "Karen Eng"
-- "Irfan Mostafa"
+- "Mohammed Irfan"
 - "Mara Silver"
 date: "2025-11-05"
 output:
@@ -968,3 +968,13 @@ Their larger surface area, higher speed, and greater road presence may increase 
 These results suggest that reducing automobile volume could substantially decrease collision rates. Investments in efficient, reliable public transit systems may encourage drivers to shift away from personal vehicles, ultimately easing road congestion and improving safety. The insights from this analysis may help inform transportation planning and support arguments for expanded public transit funding.   
 
 This analysis and report should be taken as a benchmark for current trends in traffic collisions in the Greater Toronto Area as of the end of 2025. For future research, it will be important to monitor whether collision and fatality rates change following Ontario’s recent decision to remove automated speed enforcement cameras, as policy shifts of this scale may have measurable implications for road safety. 
+
+# References 
+
+Johnson, D. (2025, September 2). Toronto traffic, transit congestion likely to worsen with in-office mandates: Experts | CBC News. CBCnews. https://www.cbc.ca/news/canada/toronto/in-office-mandates-toronto-traffic-congestion-1.7622828    
+
+Law, J., & Petric, A. T. (2024). Monitoring Day and dark traffic collisions in Toronto neighbourhoods with implications for injury reduction and vision zero initiatives: A spatial analysis approach. Accident Analysis & Prevention, 207. https://doi.org/10.1016/j.aap.2024.107728   
+
+Silverman, J. D., Hutchison, M. G., & Cusimano, M. D. (2013). Association between neighbourhood marginalization and pedestrian and cyclist collisions in Toronto intersections. Canadian journal of public health = Revue canadienne de sante publique, 104(5), e405–e409. https://doi.org/10.17269/cjph.104.4053    
+
+WHO. (2023). Road traffic injuries. World Health Organization. https://www.who.int/news-room/fact-sheets/detail/road-traffic-injuries   
