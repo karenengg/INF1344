@@ -288,9 +288,10 @@ Interpretation:
 (f) Motorcycles: ~0.6% — small count but potentially severe outcomes per collision.
 <br>
 
-
+\clearpage
 ## Count Plots for Each Vehicle
-``` {r, fig.width=6, fig.height=4, echo=FALSE}
+``` {r, echo=FALSE}
+
 binary_counts <- dat_final %>%
   summarise(across(all_of(vehicle_cols), ~sum(. == 1, na.rm = TRUE))) %>%
   pivot_longer(cols = everything(), names_to = "variable", values_to = "count")
