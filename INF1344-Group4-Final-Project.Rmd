@@ -1,7 +1,7 @@
 ---
 title: "Toronto Collision Data Exploration and Statistical Analysis"
 author:
-- "Yuehan Ahn"
+- "Yuehan An"
 - "Rita Chien"
 - "Charlene Chiu"
 - "Karen Eng"
@@ -982,4 +982,5 @@ Law, J., & Petric, A. T. (2024). Monitoring Day and dark traffic collisions in T
 Silverman, J. D., Hutchison, M. G., & Cusimano, M. D. (2013). Association between neighbourhood marginalization and pedestrian and cyclist collisions in Toronto intersections. Canadian journal of public health = Revue canadienne de sante publique, 104(5), e405–e409. https://doi.org/10.17269/cjph.104.4053    
 
 WHO. (2023). Road traffic injuries. World Health Organization. https://www.who.int/news-room/fact-sheets/detail/road-traffic-injuries   
+
 
