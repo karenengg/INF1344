@@ -16,12 +16,12 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r, Import packages, message=FALSE, include=FALSE}
+```{r, Import packages, message=FALSE, warning = FALSE, include=TRUE}
 library(tidyverse)
 library(dplyr)
 library(kableExtra)
@@ -68,19 +68,19 @@ This research project investigates the frequency and severity of collisions in t
 For the data analysis, this project uses the Toronto Police Annual Statistical Report-Traffic Collisions (Traffic Collision Data). This data has been published since November 2020 and was most recently updated on August 7, 2025. The Traffic Collision data contains data from 2014 through the current year. This data set contains 21 variables, 19 of which contain categorical data. This data set contains 756,031 observations. Each observation is an individual collision that has occurred within the data collection time period. 
 <br>
 
-The dataset contains eight categorical columns that contain only binary data. To utilize these columns in the data evaluation, they were converted to binary numeric columns where 1 represents that the column is true, and zero represents that the column is false. For example, in the pedestrian column one represents a collision involving a pedestrian, and zero represents a collision where none of the parties involved were a pedestrian. Below is a table that shows how the binary columns were recoded and what the data in those columns represents.
+The dataset contains eight categorical columns that contain only binary data. To utilize these columns in the data evaluation, they were converted to binary numeric columns where 1 represents that the column is true, and zero represents that the column is false. For example, in the pedestrian column, one represents a collision involving a pedestrian, and zero represents a collision where none of the parties involved were a pedestrian. Below is a table that shows how the binary columns were recoded and what the data in those columns represents.
 <br>
 
 The dataset contains a partial numeric column for fatalities. This column records whether a fatality occurred from the collision and the number of fatalities that occurred. The fatalities column contained numeric values greater than zero or a null value. The proportion of nulls in the fatalities column was greater than 99%. To allow us to use this column for statistical analysis, we converted the null values to zero.
 <br>
 
-Time and date in the dataset were encoded in UNIX code as milliseconds. To make this more useable for analysis. This column was converted to seconds and then converted to a standard date format of mm-dd-yyyy. This column added information of when collisions occurred in addition to the day of the week, month, and hour columns that already exist in the data set.
+Time and date in the dataset were encoded in UNIX code as milliseconds. To make this more usable for analysis. This column was converted to seconds and then converted to a standard date format of mm-dd-yyyy. This column added information of when collisions occurred in addition to the day of the week, month, and hour columns that already exist in the dataset.
 <br>
 
-While cleaning the data, it became apparent that there is an issue with how latitude and longitude are being collected or recorded in the dataset. While 84% of the location data is correctly encoded using WGS84 encoding (the standard for latitude and longitude), 16% of the rows are not encoded correctly and appear as scientific notation. After attempting to clean up this data by establishing what sort of encoding it might be and converting it to WGS84 to fill out the dull data, it became clear that this data was somehow miscoded and could not be converted. The dataset is built by parsing the geometry column into latitude, longitude, and neighborhood columns. As such, all of these columns are null when geometry is not WGS84 encoding. To resolve this issue, the geometry column was dropped from the data set, and null values were dropped when completing analysis using the neighborhood, latitude, or longitude columns. However, the null values were not removed entirely to allow for statistical analysis of other columns in the data set using the full number of observations.
+While cleaning the data, it became apparent that there is an issue with how latitude and longitude are being collected or recorded in the dataset. While 84% of the location data is correctly encoded using WGS84 encoding (the standard for latitude and longitude), 16% of the rows are not encoded correctly and appear as scientific notation. After attempting to clean up this data by establishing what sort of encoding it might be and converting it to WGS84 to fill out the null data, it became clear that this data was somehow miscoded and could not be converted. The dataset is built by parsing the geometry column into latitude, longitude, and neighborhood columns. As such, all of these columns are null when geometry is not WGS84 encoding. To resolve this issue, the geometry column was dropped from the data set, and null values were dropped when completing analysis using the neighborhood, latitude, or longitude columns. However, the null values were not removed entirely to allow for statistical analysis of other columns in the data set using the full number of observations.
 <br>
 
-```{r, Original Data Prior to Cleaning ,include=FALSE}
+```{r, Original Data Prior to Cleaning, include=TRUE, results='hide'}
 dat <- read.csv('traffic-collisions-4326.csv')
 
 # display top 6 rows
@@ -88,7 +88,7 @@ head(dat)
 ```
 
 
-```{r,Clean column names ,include=FALSE}
+```{r,Clean column names, include=TRUE, results='hide'}
 # use clean_names to clean up column names
 dat_clean <- clean_names(dat)
 dat_raw <- dat_clean
@@ -98,7 +98,7 @@ head(dat_clean)
 ```
 
 
-```{r, Clean Date Column ,include=FALSE}
+```{r, Clean Date Column ,include=TRUE, results='hide'}
 # convert OCC_Date from Unix time stamp to standard date
 
 # Convert milliseconds to seconds
@@ -119,7 +119,7 @@ head(dat_clean)
 ```
 
 
-```{r, Remove codes from neighborhood_158 and create new coloumn ,include=FALSE}
+```{r, Remove codes from neighborhood_158 and create new coloumn,include=TRUE, results='hide'}
 dat_clean$neighbourhood <- gsub("\\s*\\([^\\)]+\\)", "", dat_clean$neighbourhood_158)
 
 # remove original neighborhood_158 column
@@ -131,9 +131,10 @@ head(dat_clean)
 
 
 
-```{r, Recode binary variables to numeric ,include=FALSE}
+```{r, Recode binary variables to numeric,include=TRUE, tidy=TRUE, results='hide'}
 dat_recoded <- dat_clean %>%
-  mutate(across(c(injury_collisions, ftr_collisions, pd_collisions, automobile, motorcycle, passenger, bicycle, pedestrian),
+  mutate(across(c(injury_collisions, ftr_collisions, pd_collisions, automobile, 
+                  motorcycle, passenger, bicycle, pedestrian),
                 ~case_when(
                     .=="YES" ~ 1,
                     .=="NO" ~ 0,
@@ -147,11 +148,12 @@ dat_recoded$fatalities[is.na(dat_recoded$fatalities)] <- 0
 
 head(dat_recoded)
 
-#fatalities,injury_collisions,ftr_collisions,pd_collisions,automobile,motorcycle,passenger,bicycle,pedestrian
+#fatalities,injury_collisions,ftr_collisions,pd_collisions,automobile,
+#motorcycle,#passenger,bicycle,pedestrian
 ```
 
 
-```{r, Create Final Dataset ,include=FALSE}
+```{r, Create Final Dataset,include=TRUE, results='hide'}
 
 # rename columns
 dat_renamed <- dat_recoded %>%
@@ -176,7 +178,7 @@ head(dat_final)
 ```
 
 
-```{r table: data dictionary, echo=FALSE}
+```{r table: data dictionary, echo=TRUE, results='hide', tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 
 dataDict <- tribble(
   ~Column,            ~Description,
@@ -186,17 +188,28 @@ dataDict <- tribble(
   "month",                  "Month the traffic collision occurred",
   "year",                   "Year the traffic collision occurred",
   "hour",                   "Hour of the day the traffic collision occurred (24hr clock)",
-  "neighbourhood",          "Greater Toronto Area neighborhood where the traffic collision occurred",
-  "long_wgs84",             "Longitude for the location of the collision in WGS84 encoding",
-  "lat_wgs84",              "Latitude for the location of the collison in WGS84 encoding",
-  "injury_collisions",      "Collisions that resulted in a fatality (binary column where 1 = Yes, 0 = No)",
-  "ftr_collisions",         "Collisions where a driver fails to remain at the scene (binary column where 1 = Yes, 0 = No)",
-  "pd_collisions",          "Collisions that resulted in property damage (binary column where 1 = Yes, 0 = No)",
-  "automobile",             "Collisions where and automobile is involved (car, truck etc.) (binary column where 1 = Yes, 0 = No)",
-  "motorcycle",             "Collisions where a motorcycle is involved (binary column where 1 = Yes, 0 = No)",
-  "passenger",              "Collisions where a passenger is involved (binary column where 1 = Yes, 0 = No)",
-  "bicycle",                "Collisions where a bicycle is involved (binary column where 1 = Yes, 0 = No)",
-  "pedestrian",             "Collisions where a pedestrian is involved (binary column where 1 = Yes, 0 = No)"
+  "neighbourhood",          "Greater Toronto Area neighborhood where the traffic 
+                            collision occurred",
+  "long_wgs84",             "Longitude for the location of the collision in 
+                            WGS84 encoding",
+  "lat_wgs84",              "Latitude for the location of the collison in 
+                            WGS84 encoding",
+  "injury_collisions",      "Collisions that resulted in a fatality (binary column 
+                            where 1 = Yes, 0 = No)",
+  "ftr_collisions",         "Collisions where a driver fails to remain at the scene 
+                            (binary column where 1 = Yes, 0 = No)",
+  "pd_collisions",          "Collisions that resulted in property damage (binary column 
+                            where 1 = Yes, 0 = No)",
+  "automobile",             "Collisions where and automobile is involved (car, truck etc.)
+                            (binary column where 1 = Yes, 0 = No)",
+  "motorcycle",             "Collisions where a motorcycle is involved (binary column 
+                            where 1 = Yes, 0 = No)",
+  "passenger",              "Collisions where a passenger is involved (binary column 
+                            where 1 = Yes, 0 = No)",
+  "bicycle",                "Collisions where a bicycle is involved (binary column 
+                            where 1 = Yes, 0 = No)",
+  "pedestrian",             "Collisions where a pedestrian is involved (binary column 
+                            where 1 = Yes, 0 = No)"
 )
 
 kable(dataDict, caption="Toronto Traffic Collision Data")
@@ -206,17 +219,17 @@ kable(dataDict, caption="Toronto Traffic Collision Data")
 
 # Exploratory Data Analysis
 
-In exploring our data set we looked at hour of the day, day of the week, and month of year to find any temporal patterns of traffic collisions. We then looked at injury and fatality collisions to understand severity of accidents. We explored which vehicles or individual types (i.e. pedestrians, cyclists) that are involved in accidents and at what frequency. We also looked at what neighborhoods have the highest instances of traffic collisions and if there were any patterns of high collision areas. 
+In exploring our dataset we looked at the hour of the day, day of the week, and month of the year to find any temporal patterns of traffic collisions. We then looked at injury and fatality collisions to understand the severity of accidents. We explored which vehicles or individual types (i.e. pedestrians, cyclists) are involved in accidents and at what frequency. We also looked at what neighborhoods have the highest instances of traffic collisions and if there were any patterns of high collision areas. 
 
 We visualized the distribution of variables using histograms and count plots, and identified any outliers using box plots. We then explored relationships between variables to understand important relationships or correlations between variables.
 
 ### Summarize Data
-``` {r, Inspect structure, include= FALSE, message=FALSE, warning=FALSE}
+``` {r, Inspect structure, include=TRUE, message=FALSE, warning=FALSE}
 #str(dat_final)
 #summary(dat_final)
 ```
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
 
 # Select numeric columns
 num_vars <- names(select(dat_final, where(is.numeric)))
@@ -247,14 +260,15 @@ kable(numeric_summary,
 ```
 
 
-``` {r, Binary columns For easier visualizations later, include=FALSE}
-binary_cols <- c("fatalities", "injury_collisions", "ftr_collisions", "pd_collisions",
-                 "automobile", "motorcycle", "passenger", "bicycle", "pedestrian")
+``` {r, Binary columns For easier visualizations later, include=TRUE}
+binary_cols <- c("fatalities", "injury_collisions", "ftr_collisions", 
+                 "pd_collisions", "automobile", "motorcycle", "passenger", 
+                 "bicycle", "pedestrian")
 vehicle_cols <- c("automobile", "motorcycle", "bicycle", "pedestrian")
 ```
 
 
-``` {r, warning=FALSE ,echo=FALSE}
+``` {r, warning=FALSE ,echo=TRUE}
 binary_summary <- dat_final %>%
   summarise(across(all_of(binary_cols),
                    list(mean = ~mean(., na.rm = TRUE),
@@ -290,7 +304,7 @@ Interpretation:
 
 \clearpage
 ## Count Plots for Each Vehicle
-``` {r, echo=FALSE}
+``` {r, echo=TRUE}
 
 binary_counts <- dat_final %>%
   summarise(across(all_of(vehicle_cols), ~sum(. == 1, na.rm = TRUE))) %>%
@@ -298,7 +312,8 @@ binary_counts <- dat_final %>%
 
 ggplot(binary_counts, aes(x = reorder(variable, -count), y = count, fill = variable)) +
   geom_bar(stat = "identity") +
-  labs(title = "Number of Collisions by Type", x = "Collision Type", y = "Count of 'Yes'") +
+  labs(title = "Number of Collisions by Type", x = "Collision Type", 
+       y = "Count of 'Yes'") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_y_continuous(labels = scales::comma)
@@ -308,13 +323,15 @@ Automobile has a significantly higher collision count than any other variables. 
 (1) More automobiles than other vehicles in the roads with highest accidents   
 (2) Automobiles usually have a bigger surface area that might contribute to collisions
 
+\newpage
 ## Mean Fatalities/Injuries per Month
-``` {r, echo=FALSE}
+``` {r, echo=TRUE}
 # --- Counts instead of proportions, and months in order ---
 monthly_summary <- dat_final %>%
   mutate(month = factor(month, 
-                        levels = c("January", "February", "March", "April", "May", "June",
-                                   "July", "August", "September", "October", "November", "December"))) %>%
+                        levels = c("January", "February", "March", "April", 
+                                   "May", "June", "July", "August", "September",
+                                   "October", "November", "December"))) %>%
   group_by(month) %>%
   summarise(total_fatalities = sum(fatalities, na.rm = TRUE),
             total_injuries = sum(injury_collisions, na.rm = TRUE))
@@ -330,13 +347,13 @@ Interpretation:
 September has the highest total collisions, with Feb, Mar and Apr as the lowest. This might be because:   
 (1) Increased traffic as people return to work and school from summer break/vacations and (2) Winter months Feb-Apr is harsh and snowy causing less people to travel frequently throughout the week.
 
-
+\newpage
 ## Injury Collisions by Day of Week
-``` {r, echo=FALSE}
+``` {r, echo=TRUE}
 day_summary <- dat_final %>%
     mutate(day = factor(day, 
-                        levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
-                                   "Saturday"))) %>%
+                        levels = c("Sunday", "Monday", "Tuesday", "Wednesday", 
+                                   "Thursday", "Friday","Saturday"))) %>%
   group_by(day) %>%
   summarise(prop_injuries = sum(injury_collisions, na.rm = TRUE))
 
@@ -350,12 +367,14 @@ ggplot(day_summary, aes(x = day, y = prop_injuries, fill = day)) +
 Interpretation:   
 Fridays have the most injury collisions. Most people travel within or to different cities later in the night after office which might lead to more injury collisions.
 
+\newpage
 ## Boxplot: Daily Injury Collisions by Month
-```{r, warning=FALSE, message=FALSE,echo=FALSE}
+```{r, warning=FALSE, message=FALSE,echo=TRUE}
 daily_summary <- dat_final %>%
    mutate(month = factor(month, 
-                        levels = c("January", "February", "March", "April", "May", "June",
-                                   "July", "August", "September", "October", "November", "December"))) %>%
+                        levels = c("January", "February", "March", "April", 
+                                   "May", "June", "July", "August", "September",
+                                   "October", "November", "December"))) %>%
   group_by(month, date) %>%      # assuming 'date' exists
   summarise(total_injury = sum(injury_collisions, na.rm = TRUE)) %>%
   ungroup()
@@ -372,9 +391,9 @@ Interpretation:
 Winter seasons of January, February and March have the most outliers. Possibly due to winter, darkeness, black ice.
 
 
-
+\newpage
 ## Relationship Between Automobile Collisions and Hour
-``` {r, echo=FALSE}
+``` {r, echo=TRUE}
 # --- Bar plot for injury collisions by hour ---
 hourly_summary <- dat_final %>%
   mutate(hour = as.numeric(hour)) %>%
@@ -389,10 +408,11 @@ ggplot(hourly_summary, aes(x = hour, y = total_automobile)) +
   theme_minimal()
 ```
 Interpretation:
-Most of the automobile collisions happened between 3pm - 5pm or 15th-17hrs. We expected higher collisions later in night when people could drive more carelessly. But higher numbers of automobiles after work hours increase the chances of collisions, even if everyone is abiding by the rules.
+Most of the automobile collisions happened between 3 PM - 5 PM or 15th-17hrs. We expected higher collisions later in night when people could drive more carelessly. But higher numbers of automobiles after work hours increase the chances of collisions, even if everyone is abiding by the rules.
 
+\newpage
 ## Relationship Between Motorcycle Collisions and Hour
-``` {r, echo=FALSE}
+``` {r, echo=TRUE}
 # --- Bar plot for injury collisions by hour ---
 hourly_summary <- dat_final %>%
   mutate(hour = as.numeric(hour)) %>%
@@ -409,8 +429,9 @@ ggplot(hourly_summary, aes(x = hour, y = total_motorcycle)) +
 Interpretation:   
 A similar graph to automobile collision trends by hour can be seen with motorcycle collisions.
 
+\newpage
 ## Histogram of Collisions per Hour
-``` {r, echo=FALSE}
+``` {r, echo=TRUE}
 ggplot(dat_final, aes(x = hour)) +
   geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
   labs(title = "Distribution of Collisions by Hour", x = "Hour of Day", y = "Count") +
@@ -419,8 +440,9 @@ ggplot(dat_final, aes(x = hour)) +
 Interpretation:   
 Because automobile dominates the dataset, the overall distribution of collisions by hour of day is pretty much the same.
 
-## Collision Counts by Neighborhood
-```{r, echo=FALSE}
+\newpage
+## Collision Counts by Neighbourhood
+```{r, echo=TRUE}
 # --- Top 6 neighbourhoods by total collisions ---
 top_neighbourhoods <- dat_final %>%
   filter(neighbourhood != "NSA") %>%  #remove 'NSA' or missing ones
@@ -429,7 +451,8 @@ top_neighbourhoods <- dat_final %>%
   arrange(desc(total_collisions)) %>%
   slice_head(n = 20)
 
-ggplot(top_neighbourhoods, aes(x = reorder(neighbourhood, total_collisions), y = total_collisions)) +
+ggplot(top_neighbourhoods, aes(x = reorder(neighbourhood, total_collisions), 
+                               y = total_collisions)) +
   geom_bar(stat = "identity", fill = "tomato") +
   coord_flip() + 
   labs(title = "Top 20 Neighbourhoods by Total Collisions",
@@ -440,8 +463,9 @@ ggplot(top_neighbourhoods, aes(x = reorder(neighbourhood, total_collisions), y =
 Interpretation:   
 A horizontal bar graph (accommodating readability due to the length of neighbourhood names) reveals Wexford/Maryvale having significantly higher total collisions. With West Humber and York University Heights coming second and third. Everything else were clustered relatively closely and decreased.
 
+\newpage
 ## Scatterplot: Total Injury vs Property-Damage Collisions per Month 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
 scatter_data <- dat_final %>%
   group_by(month) %>%
   summarise(injury = sum(injury_collisions, na.rm = TRUE),
@@ -457,8 +481,9 @@ ggplot(scatter_data, aes(x = injury, y = property_damage, label = month)) +
 Interpretation:   
 The points are too scattered and can be deduced that there is no relation.
 
+\newpage
 ## Relationship of Fatalities and Injury Collisions
-``` {r, echo=FALSE}
+``` {r, echo=TRUE}
 # --- Scatterplot: Fatalities vs Injury Collisions ---
 scatter_fatal <- dat_final %>%
   group_by(month) %>%
@@ -481,8 +506,8 @@ ggplot(scatter_fatal, aes(x = total_injury, y = total_fatalities, label = month)
 Interpretation:   
 There is a slight positive relation between injury collisions and fatalities. Indicating that collisions that caused injury often led to fatalities.
 
-# Explratory Data Analysis Conclusions
-In summary we found that Automobiles dominate the traffic collision data. Traffic collisions seem most likely to occur on Fridays. The majority of accidents occur between 3pm and 5pm. There are seemingly no obvious patterns of accidents across months. The neighborhood data analysis showed clear patterns of higher numbers of accidents in North York, Etobicoke, and Scarborough as well as neighborhoods in downtown Toronto being overrepresented in the top 20 neighborhood evaluation.
+# Exploratory Data Analysis Conclusions
+In summary, we found that Automobiles dominate the traffic collision data. Traffic collisions seem most likely to occur on Fridays. The majority of accidents occur between 3pm and 5pm. There are seemingly no obvious patterns of accidents across months. The neighborhood data analysis showed clear patterns of higher numbers of accidents in North York, Etobicoke, and Scarborough as well as neighborhoods in downtown Toronto being overrepresented in the top 20 neighborhood evaluation.
 
 # Methodology   
 Under the final dataset, we selected “hour”, “day”, and “month” as the independent variables and collision counts as the dependent variable. To evaluate our hypotheses, we conducted two types of statistical tests: one-way Analysis of Variance (ANOVA), and chi-square goodness-of-fit tests. The one-way ANOVA test was selected because they are designed to test for mean differences across multiple group levels simultaneously, allowing us to identify whether collision counts varied significantly across the selected time-related variables. Rather than using total collision counts for each category, collision counts were aggregated by smaller observational units, allowing the outcome to be treated as a continuous numeric response that meets the requirements for ANOVA. For example, in the “hour” ANOVA, daily collision counts were calculated for each hour, producing the dataset “hourly daily”. The same aggregation approach was applied to the “day” and “month” ANOVAs.   
@@ -493,7 +518,7 @@ The chi-square goodness-of-fit test was used to examine whether collision counts
 # Hypothesis Testing
 
 ## Chi-Square
-```{r, include=FALSE}
+```{r, include=TRUE}
 # --- Chi-Square Tests ---
 # H1: Collisions are not uniformly distributed across hours of the day
 dat_final <- dat_final %>%
@@ -542,7 +567,7 @@ chisq_h3 <- chisq.test(obs_h3, p = rep(1/4, 4))
 #chisq_h3
 ```
 
-```{r, pretty table,echo=FALSE}
+```{r, pretty table,echo=TRUE}
 # H1: Hours
 h1_df <- data.frame(
   Hypothesis = "H1: Hourly collisions",
@@ -596,7 +621,7 @@ H3: X²= 535, df = 3, p-value < 0.0001
 The chi-square test for the four seasonal groupings (Jan–Mar, Apr–Jun, Jul–Sep, Oct–Dec) was also statistically significant. This result indicates that collisions are not evenly distributed throughout the year and that seasonal variation in collision frequency exists, even though the magnitude of deviation is much smaller than for time of day or day of week.
 
 ## ANOVA Tests
-```{r, include=FALSE}
+```{r, include=TRUE}
 # --- ANOVA Tests ---
 # H1: Collisions by hour of day
 hourly_daily <- aggregate(list(count = dat_final$hour),
@@ -635,7 +660,7 @@ anova_month <- aov(count ~ month, data = monthly_yearly)
 #summary(anova_month)
 ```
 
-```{r, pretty table ,echo=FALSE}
+```{r, pretty table ,echo=TRUE}
 # H1: Collisions by hour
 anova_hour_df <- tidy(anova_hour) %>%
   filter(term != "Residuals") %>%  # keep only the main effect
@@ -684,18 +709,18 @@ H1: The ANOVA test showed that the hour of the day has significant impact on col
 Conclusion:   
 The hypothesis is supported. Collision frequency clearly depends on the hour of the day.   
 
-H2: The ANOVA test revealed that the day of the week has significant effect on collision counts (F(6, 77) = 59.77, p < 2e-16).This result confirms that some days of the week experience more collisions than others . These patterns are consistent with expectations that Fridays and Saturdays contribute disproportionately to collision totals.   
+H2: The ANOVA test revealed that the day of the week has significant effect on collision counts (F(6, 77) = 59.77, p < 2e-16). This result confirms that some days of the week experience more collisions than others. These patterns are consistent with expectations that Fridays and Saturdays contribute disproportionately to collision totals.   
 
 Conclusion:   
 The hypothesis is supported. Collision frequencies differ meaningfully across days of the week.   
 
 H3: The ANOVA test produced a non-significant result (F(11, 126) = 1.146, p = 0.332), indicating that collision counts do not vary enough between months to demonstrate a statistically significant pattern. Although winter conditions were expected to increase collisions, the data does not indicate a seasonal impact strong enough to influence overall monthly totals.   
 
-Conclusion:   
+Conclusion:
 The hypothesis is not supported. Collision frequency does not differ significantly across months.
 
 # Spatial Analysis
-``` {r, message=FALSE, echo=FALSE, warning=FALSE}
+``` {r, message=FALSE, echo=TRUE, warning=FALSE}
 #Polygon map for spatial analysis
 neigh <- st_read("neighbourhoods-4326.geojson", quiet=TRUE)
 
@@ -720,7 +745,7 @@ ggplot() +
        fill = "Collision Count") +
   theme_minimal()
 
-# #animated!
+# #animated for presentation!
 # library(gapminder)
 # library(gganimate)
 # library(magick)
@@ -747,16 +772,15 @@ ggplot() +
 ```
 
 ## Spatial Analysis Interpretation
-The spatial analysis integrated collision data from the cleaned, finalized dataset with neighbourhood polygon geometries, which were read and stored to a new variable. The key variable used from the final data set for this analysis was “neighbourhood”, and the number of collisions per neighbourhood was counted and stored in a variable of neighborhood counts. The analysis grouped all rows in the final data set (each representing a collision event) by neighbourhood, and then counted how many collisions occurred in each area using `n()`. The variable neigh(new created variable containing polygon geometries) provided the geographic boundaries and coordinates for each neighbourhood, enabling the aggregated collision counts to be spatially mapped. Together, this information allowed collision frequencies to be joined to polygon features and visualized in a spatial format.   
+The spatial analysis integrated collision data from the cleaned, finalized dataset with neighbourhood polygon geometries, which were read and stored to a new variable. The key variable used from the final dataset for this analysis was “neighbourhood”, and the number of collisions per neighbourhood was counted and stored in a variable of neighborhood counts. The analysis grouped all rows in the final dataset (each representing a collision event) by neighbourhood, and then counted how many collisions occurred in each area using `n()`. The variable neigh (new created variable containing polygon geometries) provided the geographic boundaries and coordinates for each neighbourhood, enabling the aggregated collision counts to be spatially mapped. Together, this information allowed collision frequencies to be joined to polygon features and visualized in a spatial format.   
 
 Specifically, a polygon-based choropleth analysis was conducted. Visualization was performed using `geom_sf()` with a continuous colour scale applied to represent collision density. This approach was selected because polygon-based aggregation provides a clearer and more interpretable representation of spatial patterns in comparison to raw point-level data, particularly in regions with dense clusters of events. Neighbourhoods also serve as administrative and planning units, making the results directly relevant to transportation safety analysis and municipal decision-making.
 
 
 # Linear Regression
 
-```{r regression_prep, message=FALSE, warning=FALSE, include=FALSE}
+```{r regression_prep, message=FALSE, warning=FALSE, include=TRUE, results='hide'}
 library(lubridate)
-library(dplyr)
 
 # Convert timestamp to actual date
 dat_raw$occ_date2 <- as.POSIXct(dat_raw$occ_date / 1000, origin = "1970-01-01")
@@ -791,9 +815,7 @@ head(dat_raw)
 
 
 ## Regression Summary
-```{r regression_model, message=FALSE, warning=FALSE, echo=FALSE}
-library(dplyr)
-
+```{r regression_model, message=FALSE, warning=FALSE, echo=TRUE}
 # Aggregate collisions by month and year
 monthly_data <- dat_raw %>%
   group_by(occ_year, occ_month) %>%
@@ -834,7 +856,7 @@ knitr::kable(regression_table,
 ```
 
 ## Time Series Plot
-```{r time_series_plot, message=FALSE, warning=FALSE, echo=FALSE}
+```{r time_series_plot, message=FALSE, warning=FALSE, echo=TRUE}
 library(ggplot2)
 
 ggplot(monthly_data,
@@ -849,11 +871,9 @@ ggplot(monthly_data,
   theme_minimal()
 ```
 
-
+\newpage
 ## Seasonality Plot
-```{r seasonality_plot, message=FALSE, warning=FALSE, echo=FALSE}
-library(dplyr)
-
+```{r seasonality_plot, message=FALSE, warning=FALSE, echo=TRUE}
 seasonality_data <- monthly_data %>%
   group_by(occ_month) %>%
   summarise(avg_collisions = mean(collisions))
@@ -870,11 +890,7 @@ ggplot(seasonality_data, aes(x = factor(occ_month), y = avg_collisions)) +
 
 
 ## Forecasted Collision Trends
-```{r forecast_plot, message=FALSE, warning=FALSE, echo=FALSE}
-library(dplyr)
-library(ggplot2)
-library(lubridate)
-
+```{r forecast_plot, message=FALSE, warning=FALSE, echo=TRUE}
 # Ensure monthly_data has a proper date column
 monthly_data <- monthly_data %>%
   mutate(date = as.Date(paste(occ_year, occ_month, "01", sep = "-")))
@@ -926,7 +942,7 @@ ggplot(final_plot, aes(x = date, y = collisions, color = type)) +
 ```
 
 ## Regression Interpretation  
-To analyze how collision counts change over time in Toronto, a monthly time-series dataset was constructed and a linear regression model was applied using occ_year and occ_month as predictors. This model captures two essential components: the long-term trend across years and the periodic structures between months. This method was selected because our dependent variable (monthly collision counts) is continuous, aggregated, and influenced by temporal patterns, making linear regression both interpretable and appropriate. Additional preprocessing steps, such as converting timestamps, extracting date components, and grouping by month and year, ensured that the model was trained on a structured and reliable dataset.
+To analyze how collision counts change over time in Toronto, a monthly time-series dataset was constructed and a linear regression model was applied using occ_year and occ_month as predictors. This model captures two essential components: the long-term trend across years and the periodic structures between months. This method was selected because our dependent variable (monthly collision counts) is continuous, aggregated, and influenced by temporal patterns, making linear regression both interpretable and appropriate. Additional pre-processing steps, such as converting time stamps, extracting date components, and grouping by month and year, ensured that the model was trained on a structured and reliable dataset.
 
 Beyond the core regression, complementary visualizations were generated to clarify patterns identified by the model. The time series plot illustrates the overall trend, the seasonality plot highlights systematic monthly differences, and the 24-month forecast extends the regression results into future periods. These outputs together form a coherent analytical workflow: cleaning the data, modeling trend and seasonality, and producing forward-looking insights. Although this regression part is separate from the hypothesis test, it provides a broader view of the time background and converts the raw data into more interpretable insights.
 
@@ -949,7 +965,7 @@ Both ANOVA and chi-square testing provided consistent evidence that the time of 
 
 ### Spatial Analysis Results
 
-The map shows clear variation in traffic collisions across Toronto neighbourhoods. Most areas fall into a mid range of collision counts, shown by the darker blue shades, which suggests that collisions are relatively common and broadly distributed throughout the city. A few neighbourhoods stand out with much lighter shading, indicating notably higher collision counts in comparison to surrounding areas. These hotspots likely correspond to zones with higher traffic volume, major intersections, or dense commercial activity. In contrast, some peripheral neighbourhoods show darker, low count values, which may reflect lower population density or fewer major roadways. Overall, the spatial pattern highlights that collisions are not evenly distributed and cluster more heavily in central or high traffic corridors.  
+The map shows clear variation in traffic collisions across Toronto neighbourhoods. Most areas fall into a mid range of collision counts, shown by the medium red shades, which suggests that collisions are relatively common and broadly distributed throughout the city. A few neighbourhoods stand out with much darker shading, indicating notably higher collision counts in comparison to surrounding areas. These hotspots likely correspond to zones with higher traffic volume, major intersections, or dense commercial activity. In contrast, some peripheral neighbourhoods show lighter, low count values, which may reflect lower population density or fewer major roadways. Overall, the spatial pattern highlights that collisions are not evenly distributed and cluster more heavily in central or high traffic corridors.  
 
 ### Regression results
 
@@ -959,15 +975,15 @@ In contrast, month does not show strong or consistent effects, and the seasonali
 
 # Discussion and Recommendations
 
-Overall, the analysis shows that collision frequency remains relatively consistent across months, with no meaningful differences between winter and non-winter periods. However, clear patterns emerge when examining day-of-week and time-of-day trends. Fridays exhibit the highest number of injury-related collisions, which may be associated with increased evening travel as people commute between cities or engage in social activities after work.   
+Overall, the analysis shows that collision frequency remains relatively consistent across months, with no meaningful differences between winter and non-winter periods. However, clear patterns emerge when examining day-of-week and time-of-day trends. Fridays exhibit the highest number of injury-related collisions, which may be associated with increased evening travel, as people commute between cities or engage in social activities after work.   
 
-Time-of-day patterns also highlight a concentrated window for collisions between 3 PM and 5 PM, coinciding with the peak after-work commute. Although one might expect higher collision rates late at night due to impaired or careless driving, the findings suggest that sheer traffic volume during rush hours plays a much larger role in collision likelihood.   
+Time-of-day patterns also highlight a concentrated window for collisions between 3 PM and 5 PM, coinciding with the peak after-work commute. Although one might expect higher collision rates late at night due to impaired or careless driving, the findings suggest that sheer traffic volume during rush hours play a much larger role in collision likelihood.   
 
 Across all variables examined, the number of automobiles on the road consistently appears to be the strongest predictor of collision frequency. This aligns with two plausible explanations:    
 
 Automobiles are the most common vehicle type on the roads, naturally contributing the largest share of incidents; and   
 
-Their larger surface area, higher speed, and greater road presence may increase exposure and vulnerability to collisions compared with smaller or less common vehicles.   
+Their larger surface area, higher speed, and greater road presence may increase exposure and vulnerability to collisions compared to smaller or less common vehicles.   
 
 These results suggest that reducing automobile volume could substantially decrease collision rates. Investments in efficient, reliable public transit systems may encourage drivers to shift away from personal vehicles, ultimately easing road congestion and improving safety. The insights from this analysis may help inform transportation planning and support arguments for expanded public transit funding.   
 
