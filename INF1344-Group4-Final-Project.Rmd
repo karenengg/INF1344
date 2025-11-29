@@ -16,12 +16,12 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include=TRUE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 
-```{r, Import packages, message=FALSE, warning = FALSE, include=TRUE}
+```{r, Import packages, message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(dplyr)
 library(kableExtra)
@@ -178,7 +178,7 @@ head(dat_final)
 ```
 
 
-```{r table: data dictionary, echo=TRUE, results='hide', tidy=TRUE, tidy.opts=list(width.cutoff=60)}
+```{r table: data dictionary , results='hide', tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 
 dataDict <- tribble(
   ~Column,            ~Description,
@@ -229,7 +229,7 @@ We visualized the distribution of variables using histograms and count plots, an
 #summary(dat_final)
 ```
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
+```{r , warning=FALSE, message=FALSE}
 
 # Select numeric columns
 num_vars <- names(select(dat_final, where(is.numeric)))
@@ -260,7 +260,7 @@ kable(numeric_summary,
 ```
 
 
-``` {r, Binary columns For easier visualizations later, include=TRUE}
+``` {r, Binary columns For easier visualizations later}
 binary_cols <- c("fatalities", "injury_collisions", "ftr_collisions", 
                  "pd_collisions", "automobile", "motorcycle", "passenger", 
                  "bicycle", "pedestrian")
@@ -268,7 +268,7 @@ vehicle_cols <- c("automobile", "motorcycle", "bicycle", "pedestrian")
 ```
 
 
-``` {r, warning=FALSE ,echo=TRUE}
+``` {r, warning=FALSE}
 binary_summary <- dat_final %>%
   summarise(across(all_of(binary_cols),
                    list(mean = ~mean(., na.rm = TRUE),
@@ -304,7 +304,7 @@ Interpretation:
 
 \clearpage
 ## Count Plots for Each Vehicle
-``` {r, echo=TRUE}
+``` {r}
 
 binary_counts <- dat_final %>%
   summarise(across(all_of(vehicle_cols), ~sum(. == 1, na.rm = TRUE))) %>%
@@ -325,7 +325,7 @@ Automobile has a significantly higher collision count than any other variables. 
 
 \newpage
 ## Mean Fatalities/Injuries per Month
-``` {r, echo=TRUE}
+``` {r}
 # --- Counts instead of proportions, and months in order ---
 monthly_summary <- dat_final %>%
   mutate(month = factor(month, 
@@ -349,7 +349,7 @@ September has the highest total collisions, with Feb, Mar and Apr as the lowest.
 
 \newpage
 ## Injury Collisions by Day of Week
-``` {r, echo=TRUE}
+``` {r }
 day_summary <- dat_final %>%
     mutate(day = factor(day, 
                         levels = c("Sunday", "Monday", "Tuesday", "Wednesday", 
@@ -369,7 +369,7 @@ Fridays have the most injury collisions. Most people travel within or to differe
 
 \newpage
 ## Boxplot: Daily Injury Collisions by Month
-```{r, warning=FALSE, message=FALSE,echo=TRUE}
+```{r, warning=FALSE, message=FALSE}
 daily_summary <- dat_final %>%
    mutate(month = factor(month, 
                         levels = c("January", "February", "March", "April", 
@@ -393,7 +393,7 @@ Winter seasons of January, February and March have the most outliers. Possibly d
 
 \newpage
 ## Relationship Between Automobile Collisions and Hour
-``` {r, echo=TRUE}
+``` {r }
 # --- Bar plot for injury collisions by hour ---
 hourly_summary <- dat_final %>%
   mutate(hour = as.numeric(hour)) %>%
@@ -412,7 +412,7 @@ Most of the automobile collisions happened between 3 PM - 5 PM or 15th-17hrs. We
 
 \newpage
 ## Relationship Between Motorcycle Collisions and Hour
-``` {r, echo=TRUE}
+``` {r }
 # --- Bar plot for injury collisions by hour ---
 hourly_summary <- dat_final %>%
   mutate(hour = as.numeric(hour)) %>%
@@ -431,7 +431,7 @@ A similar graph to automobile collision trends by hour can be seen with motorcyc
 
 \newpage
 ## Histogram of Collisions per Hour
-``` {r, echo=TRUE}
+``` {r }
 ggplot(dat_final, aes(x = hour)) +
   geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
   labs(title = "Distribution of Collisions by Hour", x = "Hour of Day", y = "Count") +
@@ -442,7 +442,7 @@ Because automobile dominates the dataset, the overall distribution of collisions
 
 \newpage
 ## Collision Counts by Neighbourhood
-```{r, echo=TRUE}
+```{r }
 # --- Top 6 neighbourhoods by total collisions ---
 top_neighbourhoods <- dat_final %>%
   filter(neighbourhood != "NSA") %>%  #remove 'NSA' or missing ones
@@ -465,7 +465,7 @@ A horizontal bar graph (accommodating readability due to the length of neighbour
 
 \newpage
 ## Scatterplot: Total Injury vs Property-Damage Collisions per Month 
-```{r, echo=TRUE}
+```{r }
 scatter_data <- dat_final %>%
   group_by(month) %>%
   summarise(injury = sum(injury_collisions, na.rm = TRUE),
@@ -483,7 +483,7 @@ The points are too scattered and can be deduced that there is no relation.
 
 \newpage
 ## Relationship of Fatalities and Injury Collisions
-``` {r, echo=TRUE}
+``` {r }
 # --- Scatterplot: Fatalities vs Injury Collisions ---
 scatter_fatal <- dat_final %>%
   group_by(month) %>%
@@ -518,7 +518,7 @@ The chi-square goodness-of-fit test was used to examine whether collision counts
 # Hypothesis Testing
 
 ## Chi-Square
-```{r, include=TRUE}
+```{r, message=FALSE, include=FALSE}
 # --- Chi-Square Tests ---
 # H1: Collisions are not uniformly distributed across hours of the day
 dat_final <- dat_final %>%
@@ -567,7 +567,7 @@ chisq_h3 <- chisq.test(obs_h3, p = rep(1/4, 4))
 #chisq_h3
 ```
 
-```{r, pretty table,echo=TRUE}
+```{r, pretty table 1, message=FALSE}
 # H1: Hours
 h1_df <- data.frame(
   Hypothesis = "H1: Hourly collisions",
@@ -621,7 +621,7 @@ H3: X²= 535, df = 3, p-value < 0.0001
 The chi-square test for the four seasonal groupings (Jan–Mar, Apr–Jun, Jul–Sep, Oct–Dec) was also statistically significant. This result indicates that collisions are not evenly distributed throughout the year and that seasonal variation in collision frequency exists, even though the magnitude of deviation is much smaller than for time of day or day of week.
 
 ## ANOVA Tests
-```{r, include=TRUE}
+```{r, message=FALSE, include=FALSE}
 # --- ANOVA Tests ---
 # H1: Collisions by hour of day
 hourly_daily <- aggregate(list(count = dat_final$hour),
@@ -660,7 +660,7 @@ anova_month <- aov(count ~ month, data = monthly_yearly)
 #summary(anova_month)
 ```
 
-```{r, pretty table ,echo=TRUE}
+```{r, pretty table2, message=FALSE}
 # H1: Collisions by hour
 anova_hour_df <- tidy(anova_hour) %>%
   filter(term != "Residuals") %>%  # keep only the main effect
@@ -720,7 +720,7 @@ Conclusion:
 The hypothesis is not supported. Collision frequency does not differ significantly across months.
 
 # Spatial Analysis
-``` {r, message=FALSE, echo=TRUE, warning=FALSE}
+``` {r, message=FALSE , warning=FALSE}
 #Polygon map for spatial analysis
 neigh <- st_read("neighbourhoods-4326.geojson", quiet=TRUE)
 
@@ -779,7 +779,7 @@ Specifically, a polygon-based choropleth analysis was conducted. Visualization w
 
 # Linear Regression
 
-```{r regression_prep, message=FALSE, warning=FALSE, include=TRUE, results='hide'}
+```{r regression_prep, message=FALSE, warning=FALSE, include=FALSE}
 library(lubridate)
 
 # Convert timestamp to actual date
@@ -815,7 +815,7 @@ head(dat_raw)
 
 
 ## Regression Summary
-```{r regression_model, message=FALSE, warning=FALSE, echo=TRUE}
+```{r regression_model, message=FALSE, warning=FALSE}
 # Aggregate collisions by month and year
 monthly_data <- dat_raw %>%
   group_by(occ_year, occ_month) %>%
@@ -856,7 +856,7 @@ knitr::kable(regression_table,
 ```
 
 ## Time Series Plot
-```{r time_series_plot, message=FALSE, warning=FALSE, echo=TRUE}
+```{r time_series_plot, message=FALSE, warning=FALSE}
 library(ggplot2)
 
 ggplot(monthly_data,
@@ -873,7 +873,7 @@ ggplot(monthly_data,
 
 \newpage
 ## Seasonality Plot
-```{r seasonality_plot, message=FALSE, warning=FALSE, echo=TRUE}
+```{r seasonality_plot, message=FALSE, warning=FALSE}
 seasonality_data <- monthly_data %>%
   group_by(occ_month) %>%
   summarise(avg_collisions = mean(collisions))
@@ -890,7 +890,7 @@ ggplot(seasonality_data, aes(x = factor(occ_month), y = avg_collisions)) +
 
 
 ## Forecasted Collision Trends
-```{r forecast_plot, message=FALSE, warning=FALSE, echo=TRUE}
+```{r forecast_plot, message=FALSE, warning=FALSE}
 # Ensure monthly_data has a proper date column
 monthly_data <- monthly_data %>%
   mutate(date = as.Date(paste(occ_year, occ_month, "01", sep = "-")))
@@ -999,4 +999,8 @@ Silverman, J. D., Hutchison, M. G., & Cusimano, M. D. (2013). Association betwee
 
 WHO. (2023). Road traffic injuries. World Health Organization. https://www.who.int/news-room/fact-sheets/detail/road-traffic-injuries   
 
-
+\newpage
+# Appendix
+```{r show-all-code, ref.label=knitr::all_labels(), echo = TRUE, eval = FALSE}
+    # This chunk will display the code of all other chunks
+```
